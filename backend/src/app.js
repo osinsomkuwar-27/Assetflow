@@ -11,6 +11,7 @@ const maintenanceRoutes = require('./modules/maintenance/maintenance.routes');
 const auditsRoutes = require('./modules/audits/audits.routes');
 const reportsRoutes = require('./modules/reports/reports.routes');
 const notificationsRoutes = require('./modules/notifications/notifications.routes');
+const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 
 const errorMiddleware = require('./shared/middleware/error.middleware');
 
@@ -31,6 +32,7 @@ app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/audits', auditsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
 app.use(errorMiddleware);
