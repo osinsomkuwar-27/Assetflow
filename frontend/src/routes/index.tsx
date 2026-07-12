@@ -103,22 +103,28 @@ function LoginPage() {
             </div>
 
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const result = signIn(
-                  String(formData.get("email") ?? ""),
-                  String(formData.get("password") ?? ""),
-                );
-
-                if (!result.ok) {
-                  setError(result.message);
-                  return;
-                }
-
                 setError(null);
                 setIsSubmitting(true);
-                navigate({ to: "/app/dashboard", replace: true });
+                const formData = new FormData(e.currentTarget);
+                try {
+                  const result = await signIn(
+                    String(formData.get("email") ?? ""),
+                    String(formData.get("password") ?? "")
+                  );
+
+                  if (!result.ok) {
+                    setError(result.message);
+                    setIsSubmitting(false);
+                    return;
+                  }
+
+                  navigate({ to: "/app/dashboard", replace: true });
+                } catch (err: any) {
+                  setError(err.message || "An unexpected error occurred.");
+                  setIsSubmitting(false);
+                }
               }}
               className="space-y-4"
             >
@@ -126,7 +132,7 @@ function LoginPage() {
                 <input
                   name="email"
                   type="email"
-                  defaultValue="aditi.rao@acme.com"
+                  defaultValue=""
                   className="h-11 w-full rounded-md border border-border bg-white px-3.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
                   placeholder="name@company.com"
                   autoComplete="email"
@@ -146,7 +152,7 @@ function LoginPage() {
                   <input
                     name="password"
                     type={showPw ? "text" : "password"}
-                    placeholder="AssetFlow!42"
+                    placeholder="Enter your password"
                     className="h-11 w-full rounded-md border border-border bg-white px-3.5 pr-10 text-[14px] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
                     autoComplete="current-password"
                     required

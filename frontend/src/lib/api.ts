@@ -48,11 +48,19 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   }
 
   if (!response.ok) {
-    if ((response.status === 401 || response.status === 403) && typeof window !== "undefined") {
+    if (response.status === 401 && typeof window !== "undefined") {
       window.localStorage.removeItem(AUTH_TOKEN_KEY);
       window.localStorage.removeItem(AUTH_SESSION_KEY);
       if (window.location.pathname !== "/") {
         window.location.href = "/";
+      }
+    }
+    if (response.status === 403 && typeof window !== "undefined") {
+      import("sonner").then((m) => {
+        m.toast.error("Access Denied: Only Admins or Asset Managers are allowed to access this section.");
+      });
+      if (window.location.pathname !== "/app/dashboard") {
+        window.location.href = "/app/dashboard";
       }
     }
     throw new Error((data?.message as string | undefined) || "Request failed");

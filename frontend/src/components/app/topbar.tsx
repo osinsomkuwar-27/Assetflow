@@ -1,5 +1,7 @@
 import { Search, Bell, Settings, Plus, HelpCircle, ChevronDown } from "lucide-react";
 import { useRouterState } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 
 const titles: Record<string, string> = {
   "/app/dashboard": "Dashboard",
@@ -14,8 +16,24 @@ const titles: Record<string, string> = {
 };
 
 export function AppTopbar() {
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const title = titles[pathname] ?? "Workspace";
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await api.get<{ count: number }>("/api/notifications/unread-count");
+      setUnreadCount(res.count || 0);
+    } catch (err) {
+      console.error("Error fetching notifications count:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadCount();
+    window.addEventListener("notifications-updated", fetchUnreadCount);
+    return () => window.removeEventListener("notifications-updated", fetchUnreadCount);
+  }, []);
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-border bg-white/85 px-6 backdrop-blur">
@@ -49,7 +67,7 @@ export function AppTopbar() {
         <IconButton>
           <Settings className="h-4.5 w-4.5" />
         </IconButton>
-        <IconButton badge="7">
+        <IconButton badge={unreadCount > 0 ? String(unreadCount) : undefined}>
           <Bell className="h-4.5 w-4.5" />
         </IconButton>
 
