@@ -5,15 +5,11 @@ const AUTH_SESSION_KEY = "assetflow.auth.session";
 
 function getApiBaseUrl() {
   if (typeof window === "undefined") {
-    return import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+    return import.meta.env.VITE_API_URL || "http://localhost:5000";
   }
 
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL.replace(/\/$/, "");
-  }
-
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-    return "http://127.0.0.1:5000";
   }
 
   return "";
@@ -48,11 +44,21 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   }
 
   if (!response.ok) {
-    if ((response.status === 401 || response.status === 403) && typeof window !== "undefined") {
+    if (response.status === 401 && typeof window !== "undefined") {
       window.localStorage.removeItem(AUTH_TOKEN_KEY);
       window.localStorage.removeItem(AUTH_SESSION_KEY);
       if (window.location.pathname !== "/") {
         window.location.href = "/";
+      }
+    }
+    if (response.status === 403 && typeof window !== "undefined") {
+      import("sonner").then((m) => {
+        m.toast.error("Access Denied: Only Admins or Asset Managers are allowed to access this section.");
+      });
+      if (window.location.pathname !== "/app/dashboard") {
+        setTimeout(() => {
+          window.location.href = "/app/dashboard";
+        }, 3000);
       }
     }
     throw new Error((data?.message as string | undefined) || "Request failed");

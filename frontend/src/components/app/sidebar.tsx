@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/auth";
+import { api } from "@/lib/api";
 
 const nav = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -31,7 +32,23 @@ const nav = [
 
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await api.get<{ count: number }>("/api/notifications/unread-count");
+      setUnreadCount(res.count || 0);
+    } catch (err) {
+      console.error("Error fetching notifications count:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadCount();
+    window.addEventListener("notifications-updated", fetchUnreadCount);
+    return () => window.removeEventListener("notifications-updated", fetchUnreadCount);
+  }, []);
 
   return (
     <aside
@@ -84,9 +101,9 @@ export function AppSidebar() {
                   )}
                   <Icon className={cn("h-4.5 w-4.5 shrink-0", active ? "text-primary" : "text-muted-foreground group-hover:text-primary")} strokeWidth={active ? 2.3 : 1.9} />
                   {!collapsed && <span className="truncate">{item.label}</span>}
-                  {!collapsed && item.label === "Notifications" && (
+                  {!collapsed && item.label === "Notifications" && unreadCount > 0 && (
                     <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                      7
+                      {unreadCount}
                     </span>
                   )}
                 </Link>

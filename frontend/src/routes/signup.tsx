@@ -74,24 +74,30 @@ function SignupPage() {
             </div>
 
             <form
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault();
-                const formData = new FormData(event.currentTarget);
-                const result = signUp({
-                  name: String(formData.get("name") ?? ""),
-                  email: String(formData.get("email") ?? ""),
-                  password: String(formData.get("password") ?? ""),
-                  department: String(formData.get("department") ?? ""),
-                });
-
-                if (!result.ok) {
-                  setError(result.message);
-                  return;
-                }
-
                 setError(null);
                 setIsSubmitting(true);
-                void navigate({ to: "/app/dashboard", replace: true });
+                const formData = new FormData(event.currentTarget);
+                try {
+                  const result = await signUp({
+                    name: String(formData.get("name") ?? ""),
+                    email: String(formData.get("email") ?? ""),
+                    password: String(formData.get("password") ?? ""),
+                    department: String(formData.get("department") ?? ""),
+                  });
+
+                  if (!result.ok) {
+                    setError(result.message);
+                    setIsSubmitting(false);
+                    return;
+                  }
+
+                  void navigate({ to: "/app/dashboard", replace: true });
+                } catch (err: any) {
+                  setError(err.message || "An unexpected error occurred during signup.");
+                  setIsSubmitting(false);
+                }
               }}
               className="space-y-4"
             >

@@ -53,7 +53,7 @@ router.get('/categories', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.get('/employees', requireRole('Admin'), async (req, res, next) => {
+router.get('/employees', async (req, res, next) => {
   try {
     const employees = await prisma.employee.findMany({
       include: { department: true },
