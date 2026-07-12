@@ -52,24 +52,77 @@ flowchart TD
 ##  Folder Structure
 
 ```
-assetflow/
-├── client/                 # Frontend application
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── hooks/
-│   │   └── services/
-│   └── public/
-├── server/                  # Backend application
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
+backend/
+├── src/
+│   ├── config/
+│   │   ├── db.js                 # DB connection
+│   │   └── env.js                # env var loader/validator
+│   │
+│   ├── models/
+│   │   ├── Department.js
+│   │   ├── Category.js
+│   │   ├── Employee.js           # also acts as User (auth)
+│   │   ├── Asset.js
+│   │   ├── Allocation.js
+│   │   ├── TransferRequest.js
+│   │   ├── Booking.js
+│   │   ├── MaintenanceRequest.js
+│   │   ├── AuditCycle.js
+│   │   ├── AuditItem.js          # per-asset verification result within a cycle
+│   │   └── Notification.js
+│   │
+│   ├── modules/                  # KSHITIJ owns these two folders
+│   │   ├── auth/
+│   │   │   ├── auth.routes.js
+│   │   │   ├── auth.controller.js
+│   │   │   └── auth.service.js
+│   │   ├── assets/
+│   │   │   ├── assets.routes.js
+│   │   │   ├── assets.controller.js
+│   │   │   └── assets.service.js
+│   │   ├── allocations/
+│   │   │   ├── allocations.routes.js
+│   │   │   ├── allocations.controller.js
+│   │   │   └── allocations.service.js   # conflict-check + transfer logic lives here
+│   │   └── bookings/
+│   │       ├── bookings.routes.js
+│   │       ├── bookings.controller.js
+│   │       └── bookings.service.js      # overlap validation lives here
+│   │
+│   ├── modules/                  # TANISHKA owns these two folders
+│   │   ├── maintenance/
+│   │   │   ├── maintenance.routes.js
+│   │   │   ├── maintenance.controller.js
+│   │   │   └── maintenance.service.js
+│   │   ├── audits/
+│   │   │   ├── audits.routes.js
+│   │   │   ├── audits.controller.js
+│   │   │   └── audits.service.js
+│   │   ├── reports/
+│   │   │   ├── reports.routes.js
+│   │   │   └── reports.controller.js
+│   │   └── notifications/
+│   │       ├── notifications.routes.js
+│   │       ├── notifications.controller.js
+│   │       └── notifications.service.js
+│   │
+│   ├── shared/                   # BOTH — the coordination point
+│   │   ├── assetStatus.service.js   # THE ONE function that writes Asset.status
+│   │   │                             # signature: updateAssetStatus(assetId, newStatus, reason, actorId)
 │   │   ├── middleware/
-│   │   └── services/
-│   └── config/
-├── docs/                     # PRD, diagrams, docs
-└── README.md
+│   │   │   ├── auth.middleware.js   # verifies JWT/session
+│   │   │   ├── role.middleware.js   # RBAC guard (checks role per route)
+│   │   │   └── error.middleware.js
+│   │   └── utils/
+│   │       ├── overlapCheck.js      # shared time-range overlap utility (bookings)
+│   │       └── responseFormatter.js
+│   │
+│   ├── app.js                    # express app, mounts all routes
+│   └── server.js                 # entry point, starts listener
+│
+├── .env
+├── package.json
+└── README.md                     # API contract lives here initially (see below)
 ```
 
 ---
