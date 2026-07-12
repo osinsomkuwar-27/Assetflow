@@ -17,63 +17,59 @@ function LoginPage() {
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
       {/* Left — editorial */}
-      <div className="relative hidden overflow-hidden bg-blue-800 text-white lg:block">
-        <div className="absolute inset-0" style={{
-          backgroundImage:
-            "radial-gradient(at 15% 20%, rgba(0,180,216,0.35) 0px, transparent 55%), radial-gradient(at 85% 10%, rgba(0,150,199,0.30) 0px, transparent 50%), radial-gradient(at 75% 85%, rgba(0,180,216,0.25) 0px, transparent 55%), radial-gradient(at 20% 90%, rgba(2,95,146,0.55) 0px, transparent 55%)",
-        }} />
-        <div className="absolute inset-0 opacity-[0.09]" style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-          backgroundSize: "44px 44px",
-          maskImage: "radial-gradient(ellipse at center, black 40%, transparent 78%)",
-        }} />
+      <div className="relative hidden overflow-hidden text-blue-900 lg:block">
+        <img
+          src="/login-bg.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-white/15 to-white/45" />
 
         {/* Floating geometric marks */}
-        <div className="absolute right-16 top-24 h-40 w-40 rounded-3xl border border-white/20 backdrop-blur-sm rotate-12" />
-        <div className="absolute right-40 top-52 h-24 w-24 rounded-full border border-white/25" />
-        <div className="absolute bottom-24 right-24 h-56 w-56 rounded-full bg-gradient-to-br from-cyan-300/25 to-transparent blur-2xl" />
+        <div className="absolute right-16 top-24 h-40 w-40 rounded-3xl border border-blue-900/10 backdrop-blur-sm rotate-12" />
+        <div className="absolute right-40 top-52 h-24 w-24 rounded-full border border-blue-900/10" />
 
         <div className="relative z-10 flex h-full flex-col p-14">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur">
-              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/50 ring-1 ring-blue-900/10 backdrop-blur">
+              <svg viewBox="0 0 24 24" className="h-6 w-6 text-blue-900" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M4 7l8-4 8 4-8 4-8-4z" />
                 <path d="M4 12l8 4 8-4" />
                 <path d="M4 17l8 4 8-4" />
               </svg>
             </div>
             <div>
-              <div className="text-[16px] font-semibold tracking-tight">AssetFlow</div>
-              <div className="text-[11px] uppercase tracking-[0.18em] text-white/60">Enterprise ERP</div>
+              <div className="text-[16px] font-semibold tracking-tight text-blue-900">AssetFlow</div>
+              <div className="text-[11px] uppercase tracking-[0.18em] text-blue-900/60">Enterprise ERP</div>
             </div>
           </div>
 
           <div className="my-auto max-w-lg">
-            <h1 className="font-serif text-[52px] font-medium leading-[1.05] tracking-tight">
+            <h1 className="font-serif text-[52px] font-medium leading-[1.05] tracking-tight text-blue-900">
               Every asset,<br />
-              <span className="italic text-cyan-200">accounted for.</span>
+              <span className="italic text-orange-500">accounted for.</span>
             </h1>
-            <p className="mt-6 max-w-md text-[15px] leading-relaxed text-white/75">
+            <p className="mt-6 max-w-md text-[15px] leading-relaxed text-blue-900/70">
               A single enterprise workspace to register, allocate, book, service and audit
               every asset and resource across your organization.
             </p>
 
-            <div className="mt-10 grid grid-cols-3 gap-6 border-t border-white/15 pt-8">
+            <div className="mt-10 grid grid-cols-3 gap-6 border-t border-blue-900/15 pt-8">
               {[
                 { k: "12,480", v: "Assets under management" },
                 { k: "99.98%", v: "Audit accuracy" },
                 { k: "43", v: "Enterprises trust us" },
               ].map((s) => (
                 <div key={s.v}>
-                  <div className="font-serif text-2xl font-medium text-white">{s.k}</div>
-                  <div className="mt-1 text-[11.5px] uppercase tracking-wider text-white/55">{s.v}</div>
+                  <div className="font-serif text-2xl font-medium text-blue-900">{s.k}</div>
+                  <div className="mt-1 text-[11.5px] uppercase tracking-wider text-blue-900/55">{s.v}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[12px] text-white/55">
+          <div className="flex items-center justify-between text-[12px] text-blue-900/55">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> SOC 2 · ISO 27001</div>
               <div className="flex items-center gap-1.5"><LineChart className="h-3.5 w-3.5" /> Real-time analytics</div>
@@ -176,7 +172,7 @@ function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary text-[14px] font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary-hover"
+                className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-blue-800 text-[14px] font-semibold text-white shadow-sm transition-all hover:bg-blue-900"
               >
                 {isSubmitting ? "Signing in…" : "Sign in to workspace"}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
