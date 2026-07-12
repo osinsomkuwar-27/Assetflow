@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+
+# environment variables (contains DB password, JWT secret)
+.env
+
+# logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# editor
+.vscode/
+.idea/
+
+# build output (if you add a frontend later in the same repo)
+dist/
+build/
