@@ -18,7 +18,7 @@ function SignupPage() {
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
       <div className="relative hidden overflow-hidden text-blue-900 lg:block">
         <img
-          src="/login-bg.png"
+          src="/image.png"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover"

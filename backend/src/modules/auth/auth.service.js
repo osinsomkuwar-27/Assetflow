@@ -11,12 +11,40 @@ async function signup({ name, email, password, department }) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+
+  let departmentId = null;
+  if (department && typeof department === 'string' && department.trim() !== '') {
+    const deptName = department.trim();
+    
+    // Try to find matching department by name (case-insensitive)
+    let dept = await prisma.department.findFirst({
+      where: { name: { equals: deptName, mode: 'insensitive' } }
+    });
+
+    // If not found by name, check if it's a valid UUID
+    if (!dept && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(deptName)) {
+      dept = await prisma.department.findUnique({ where: { id: deptName } });
+    }
+
+    // If still not found, auto-create the department
+    if (!dept) {
+      dept = await prisma.department.create({
+        data: {
+          name: deptName,
+          code: deptName.slice(0, 4).toUpperCase()
+        }
+      });
+    }
+
+    departmentId = dept.id;
+  }
+
   const employee = await prisma.employee.create({
     data: {
       name,
       email,
       passwordHash,
-      departmentId: department || null,
+      departmentId,
       role: 'Employee',
     },
   });
