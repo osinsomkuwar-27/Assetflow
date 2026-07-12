@@ -308,7 +308,27 @@ bun run dev
 
 ---
 
-##  Future Improvements
+## 👥 Seeded Demo Accounts
+
+You can populate the local database with demo data by running the seed script:
+```bash
+# Seed local database
+cd backend
+node seed.js
+```
+
+Use any of the following accounts to sign in (Password for all accounts is **`AssetFlow!42`**):
+
+| Role | Email | Permissions |
+| :--- | :--- | :--- |
+| **Admin** | `aditi.rao@acme.com` or `admin@assetflow.com` | Full workspace control (all tabs unlocked) |
+| **Asset Manager** | `rajesh@assetflow.com` | Register assets, checkouts, and run audit cycles |
+| **Department Head** | `sarah@assetflow.com` | Approve transfers, create bookings, view reports |
+| **Employee** | `tanishkagadilkar@gmail.com` | View directory, request allocations & maintenance (Audit and Reports tabs restricted) |
+
+---
+
+## 🚀 Future Improvements
 
 -  QR code scanning for asset lookup
 -  RFID / IoT-based asset tracking

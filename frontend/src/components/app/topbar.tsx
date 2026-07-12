@@ -2,6 +2,7 @@ import { Search, Bell, Settings, Plus, HelpCircle, ChevronDown } from "lucide-re
 import { useRouterState } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { getAuthSession } from "@/lib/auth";
 
 const titles: Record<string, string> = {
   "/app/dashboard": "Dashboard",
@@ -34,6 +35,11 @@ export function AppTopbar() {
     window.addEventListener("notifications-updated", fetchUnreadCount);
     return () => window.removeEventListener("notifications-updated", fetchUnreadCount);
   }, []);
+
+  const session = getAuthSession();
+  const userName = session?.name ?? "Aditi Rao";
+  const userRole = session?.role ?? "Facilities Admin";
+  const userInitials = session?.initials ?? "AR";
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-border bg-white/85 px-6 backdrop-blur">
@@ -73,11 +79,11 @@ export function AppTopbar() {
 
         <div className="ml-1 flex items-center gap-2.5 rounded-md border border-border bg-white pl-1 pr-2.5 py-1">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-500 to-blue-700 text-[11px] font-semibold text-white">
-            AR
+            {userInitials}
           </div>
           <div className="hidden text-left md:block">
-            <div className="text-[12.5px] font-semibold leading-tight">Aditi Rao</div>
-            <div className="text-[10.5px] leading-tight text-muted-foreground">Facilities Admin</div>
+            <div className="text-[12.5px] font-semibold leading-tight">{userName}</div>
+            <div className="text-[10.5px] leading-tight text-muted-foreground">{userRole}</div>
           </div>
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
