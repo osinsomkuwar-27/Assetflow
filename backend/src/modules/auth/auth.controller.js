@@ -8,7 +8,7 @@ async function signup(req, res, next) {
       return fail(res, 'name, email, and password are required', 400);
     }
     const employee = await authService.signup({ name, email, password, department });
-    return ok(res, { id: employee._id, name: employee.name, email: employee.email, role: employee.role }, 'Account created', 201);
+    return ok(res, { id: employee.id, name: employee.name, email: employee.email, role: employee.role }, 'Account created', 201);
   } catch (err) {
     next(err);
   }
@@ -23,7 +23,7 @@ async function login(req, res, next) {
     const { token, employee } = await authService.login({ email, password });
     return ok(res, {
       token,
-      user: { id: employee._id, name: employee.name, email: employee.email, role: employee.role, department: employee.department },
+      user: { id: employee.id, name: employee.name, email: employee.email, role: employee.role, department: employee.department },
     }, 'Login successful');
   } catch (err) {
     next(err);

@@ -1,9 +1,8 @@
-const Asset = require('../../models/Asset');
-const Booking = require('../../models/Booking');
+const { prisma } = require('../../config/db');
 const { rangesOverlap } = require('../../shared/utils/overlapCheck');
 
 async function createBooking({ assetId, bookedBy, department, startTime, endTime }) {
-  const asset = await Asset.findById(assetId);
+  const asset = await prisma.asset.findUnique({ where: { id: assetId } });
   if (!asset) {
     const err = new Error('Asset not found');
     err.statusCode = 404;
@@ -22,44 +21,47 @@ async function createBooking({ assetId, bookedBy, department, startTime, endTime
     err.statusCode = 400;
     throw err;
   }
-
-  // fetch existing active bookings for this asset that could possibly overlap
-  const existing = await Booking.find({
-    asset: assetId,
-    status: { $in: ['Upcoming', 'Ongoing'] },
+  const existing = await prisma.booking.findMany({
+    where: { assetId, status: { in: ['Upcoming', 'Ongoing'] } },
   });
 
   const conflict = existing.find((b) => rangesOverlap(start, end, b.startTime, b.endTime));
   if (conflict) {
     const err = new Error('This time slot overlaps with an existing booking');
     err.statusCode = 409;
-    err.conflict = { bookingId: conflict._id, startTime: conflict.startTime, endTime: conflict.endTime };
+    err.conflict = { bookingId: conflict.id, startTime: conflict.startTime, endTime: conflict.endTime };
     throw err;
   }
 
-  const booking = await Booking.create({
-    asset: assetId,
-    bookedBy,
-    department: department || null,
-    startTime: start,
-    endTime: end,
+  const booking = await prisma.booking.create({
+    data: {
+      assetId,
+      bookedById: bookedBy,
+      departmentId: department || null,
+      startTime: start,
+      endTime: end,
+    },
   });
 
   return booking;
 }
 
 async function cancelBooking(bookingId) {
-  const booking = await Booking.findByIdAndUpdate(bookingId, { status: 'Cancelled' }, { new: true });
-  if (!booking) {
+  try {
+    const booking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: 'Cancelled' },
+    });
+    return booking;
+  } catch (e) {
     const err = new Error('Booking not found');
     err.statusCode = 404;
     throw err;
   }
-  return booking;
 }
 
 async function listBookingsForAsset(assetId) {
-  return Booking.find({ asset: assetId }).sort({ startTime: 1 });
+  return prisma.booking.findMany({ where: { assetId }, orderBy: { startTime: 'asc' } });
 }
 
 module.exports = { createBooking, cancelBooking, listBookingsForAsset };

@@ -27,10 +27,13 @@ AssetFlow is a modern ERP platform that helps organizations track, allocate, and
 
 | Layer | Technology |
 |---|---|
-| Frontend | _TBD_ |
-| Backend | _TBD_ |
-| Database | _TBD_ |
-| Authentication | _TBD_ |
+| Frontend | TanStack Start (React) + TanStack Router + Vite + TypeScript |
+| UI / Styling | Tailwind CSS + shadcn/ui |
+| Frontend package manager | Bun |
+| Backend | Node.js + Express |
+| ORM | Prisma |
+| Database | PostgreSQL |
+| Authentication | JWT |
 | Hosting | _TBD_ |
 
 ---
@@ -42,7 +45,7 @@ flowchart TD
     Client[Web Client] --> API[API Layer]
     API --> Auth[Auth & RBAC Middleware]
     API --> Modules[Core Modules]
-    Modules --> DB[(Database)]
+    Modules --> DB[(PostgreSQL via Prisma)]
     Modules --> Notif[Notification Service]
     Notif --> Client
 ```
@@ -51,27 +54,22 @@ flowchart TD
 
 ##  Folder Structure
 
+### Backend
+
 ```
 backend/
+├── prisma/
+│   ├── migrations/
+│   │   └── <timestamp>_init/
+│   │       ├── migration.sql
+│   │       └── migration_lock.toml
+│   └── schema.prisma
+│
 ├── src/
 │   ├── config/
-│   │   ├── db.js                 # DB connection
-│   │   └── env.js                # env var loader/validator
+│   │   └── db.js                 # Prisma client / DB connection
 │   │
-│   ├── models/
-│   │   ├── Department.js
-│   │   ├── Category.js
-│   │   ├── Employee.js           # also acts as User (auth)
-│   │   ├── Asset.js
-│   │   ├── Allocation.js
-│   │   ├── TransferRequest.js
-│   │   ├── Booking.js
-│   │   ├── MaintenanceRequest.js
-│   │   ├── AuditCycle.js
-│   │   ├── AuditItem.js          # per-asset verification result within a cycle
-│   │   └── Notification.js
-│   │
-│   ├── modules/                  # KSHITIJ owns these two folders
+│   ├── modules/                  # KSHITIJ owns these
 │   │   ├── auth/
 │   │   │   ├── auth.routes.js
 │   │   │   ├── auth.controller.js
@@ -83,13 +81,15 @@ backend/
 │   │   ├── allocations/
 │   │   │   ├── allocations.routes.js
 │   │   │   ├── allocations.controller.js
-│   │   │   └── allocations.service.js   # conflict-check + transfer logic lives here
-│   │   └── bookings/
-│   │       ├── bookings.routes.js
-│   │       ├── bookings.controller.js
-│   │       └── bookings.service.js      # overlap validation lives here
+│   │   │   └── allocations.service.js   # conflict-check + transfer logic
+│   │   ├── bookings/
+│   │   │   ├── bookings.routes.js
+│   │   │   ├── bookings.controller.js
+│   │   │   └── bookings.service.js      # overlap validation
+│   │   └── org/
+│   │       └── org.routes.js
 │   │
-│   ├── modules/                  # TANISHKA owns these two folders
+│   ├── modules/                  # TANISHKA owns these
 │   │   ├── maintenance/
 │   │   │   ├── maintenance.routes.js
 │   │   │   ├── maintenance.controller.js
@@ -100,29 +100,87 @@ backend/
 │   │   │   └── audits.service.js
 │   │   ├── reports/
 │   │   │   ├── reports.routes.js
-│   │   │   └── reports.controller.js
-│   │   └── notifications/
-│   │       ├── notifications.routes.js
-│   │       ├── notifications.controller.js
-│   │       └── notifications.service.js
+│   │   │   ├── reports.controller.js
+│   │   │   └── reports.service.js
+│   │   ├── notifications/
+│   │   │   ├── notifications.routes.js
+│   │   │   ├── notifications.controller.js
+│   │   │   └── notifications.service.js
+│   │   └── dashboard/
+│   │       ├── dashboard.routes.js
+│   │       ├── dashboard.controller.js
+│   │       └── dashboard.service.js     # KPI aggregation
 │   │
 │   ├── shared/                   # BOTH — the coordination point
 │   │   ├── assetStatus.service.js   # THE ONE function that writes Asset.status
-│   │   │                             # signature: updateAssetStatus(assetId, newStatus, reason, actorId)
 │   │   ├── middleware/
-│   │   │   ├── auth.middleware.js   # verifies JWT/session
-│   │   │   ├── role.middleware.js   # RBAC guard (checks role per route)
+│   │   │   ├── auth.middleware.js   # verifies JWT
+│   │   │   ├── role.middleware.js   # RBAC guard
 │   │   │   └── error.middleware.js
 │   │   └── utils/
-│   │       ├── overlapCheck.js      # shared time-range overlap utility (bookings)
+│   │       ├── overlapCheck.js      # shared booking overlap utility
 │   │       └── responseFormatter.js
 │   │
 │   ├── app.js                    # express app, mounts all routes
 │   └── server.js                 # entry point, starts listener
 │
-├── .env
+├── .env.example
+├── .gitignore
 ├── package.json
-└── README.md                     # API contract lives here initially (see below)
+└── package-lock.json
+```
+
+### Frontend
+
+```
+frontend/
+├── .lovable/                     # Lovable project metadata (not required to run locally)
+├── public/
+│   └── favicon.ico
+│
+├── src/
+│   ├── components/
+│   │   ├── app/                  # shared app-shell components
+│   │   │   ├── sidebar.tsx
+│   │   │   ├── topbar.tsx
+│   │   │   └── page-header.tsx
+│   │   └── ui/                   # shadcn/ui kit (button, card, table, dialog, badge, etc.)
+│   │
+│   ├── hooks/
+│   │   └── use-mobile.tsx
+│   │
+│   ├── lib/
+│   │   ├── utils.ts
+│   │   ├── error-capture.ts
+│   │   ├── error-page.ts
+│   │   └── lovable-error-reporting.ts
+│   │
+│   ├── routes/                   # file-based routing (TanStack Router)
+│   │   ├── __root.tsx
+│   │   ├── index.tsx
+│   │   ├── app.tsx               # app shell wrapper route
+│   │   ├── app.dashboard.tsx
+│   │   ├── app.organization.tsx
+│   │   ├── app.assets.tsx
+│   │   ├── app.allocation.tsx
+│   │   ├── app.booking.tsx
+│   │   ├── app.maintenance.tsx
+│   │   ├── app.audit.tsx
+│   │   ├── app.reports.tsx
+│   │   └── app.notifications.tsx
+│   │
+│   ├── router.tsx
+│   ├── routeTree.gen.ts          # auto-generated, do not edit by hand
+│   ├── server.ts                 # SSR entry
+│   ├── start.ts
+│   └── styles.css
+│
+├── components.json               # shadcn/ui config
+├── vite.config.ts
+├── tsconfig.json
+├── bunfig.toml
+├── bun.lock
+└── package.json
 ```
 
 ---
@@ -210,15 +268,15 @@ flowchart LR
 ##  Installation
 
 ```bash
-git clone https://github.com/your-org/assetflow.git
-cd assetflow
+git clone https://github.com/osinsomkuwar-27/Assetflow.git
+cd Assetflow
 ```
 
 ---
 
 ##  Environment Variables
 
-Create a `.env` file in the `server/` directory:
+### Backend — create `.env` in `backend/`
 
 ```env
 DATABASE_URL=
@@ -227,20 +285,25 @@ PORT=
 NODE_ENV=
 ```
 
+### Frontend
+
+No `.env` required for local dev unless the API base URL is externalized — check `frontend/src/lib/utils.ts` for the current API client config.
+
 ---
 
 ## ▶ Running Locally
 
 ```bash
-# Install dependencies
-cd client && npm install
-cd ../server && npm install
-
-# Start backend
+# Backend
+cd backend
+npm install
+npx prisma generate
 npm run dev
 
-# Start frontend (in a separate terminal)
-cd ../client && npm run dev
+# Frontend (in a separate terminal)
+cd frontend
+bun install
+bun run dev
 ```
 
 ---
