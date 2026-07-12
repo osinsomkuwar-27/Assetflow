@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageHeader, Section, StatusPill } from "@/components/app/page-header";
+import { downloadCsv } from "@/lib/api";
 import {
   Plus, Download, ArrowUpRight, ArrowDownRight, TrendingUp,
   Package, Users, Wrench, CalendarClock, AlertTriangle, ArrowRight,
@@ -31,6 +32,17 @@ const maintenance = [
 ];
 
 function Dashboard() {
+  const navigate = useNavigate();
+
+  const handleExport = () => {
+    const rows = [
+      { tag: "AF-0114", name: "Dell Latitude 7440", assignee: "Priya Shah", status: "Allocated" },
+      { tag: "AF-0062", name: "Epson Projector L850", assignee: "HQ Floor 2", status: "Maintenance" },
+      { tag: "AF-0201", name: "Ergonomic Chair", assignee: "Warehouse", status: "Available" },
+    ];
+    downloadCsv("dashboard-overview.csv", rows);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -38,10 +50,18 @@ function Dashboard() {
         description="Live utilization, requests and maintenance across every department in Acme Industries."
         actions={
           <>
-            <button className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-sm font-medium hover:border-primary/40 hover:text-primary">
+            <button
+              type="button"
+              onClick={handleExport}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-sm font-medium hover:border-primary/40 hover:text-primary"
+            >
               <Download className="h-4 w-4" /> Export
             </button>
-            <button className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/app/assets" })}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"
+            >
               <Plus className="h-4 w-4" /> Register asset
             </button>
           </>
@@ -65,7 +85,7 @@ function Dashboard() {
             Flagged for follow-up · Assigned to Facilities operations · Last reminder sent 4h ago
           </div>
         </div>
-        <button className="text-[13px] font-semibold text-[--color-destructive] hover:underline">Review now</button>
+        <button type="button" onClick={() => navigate({ to: "/app/maintenance" })} className="text-[13px] font-semibold text-[--color-destructive] hover:underline">Review now</button>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -122,7 +142,7 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Section className="lg:col-span-2" title="Recent assets" description="Latest registrations across the workspace" actions={
-          <button className="text-[12.5px] font-semibold text-primary hover:text-primary-hover">View all</button>
+          <button type="button" onClick={() => navigate({ to: "/app/assets" })} className="text-[12.5px] font-semibold text-primary hover:text-primary-hover">View all</button>
         }>
           <table className="w-full text-sm">
             <thead className="text-[11.5px] uppercase tracking-wider text-muted-foreground">

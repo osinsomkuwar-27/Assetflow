@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
@@ -21,6 +22,11 @@ import { Route as AppAuditRouteImport } from './routes/app.audit'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppAllocationRouteImport } from './routes/app.allocation'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -80,6 +86,7 @@ const AppAllocationRoute = AppAllocationRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/signup': typeof SignupRoute
   '/app/allocation': typeof AppAllocationRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/audit': typeof AppAuditRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/signup': typeof SignupRoute
   '/app/allocation': typeof AppAllocationRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/audit': typeof AppAuditRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/signup': typeof SignupRoute
   '/app/allocation': typeof AppAllocationRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/audit': typeof AppAuditRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/signup'
     | '/app/allocation'
     | '/app/assets'
     | '/app/audit'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/app'
+    | '/signup'
     | '/app/allocation'
     | '/app/assets'
     | '/app/audit'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/signup'
     | '/app/allocation'
     | '/app/assets'
     | '/app/audit'
@@ -162,10 +174,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -275,6 +295,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

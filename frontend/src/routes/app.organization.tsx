@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, Section, StatusPill } from "@/components/app/page-header";
-import { useState } from "react";
+import { apiRequest, downloadCsv } from "@/lib/api";
+import { useRef, useState } from "react";
 import { Plus, Search, MoreHorizontal, Users, Tag, Building2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/organization")({ component: OrgSetup });
@@ -22,6 +23,48 @@ const depts = [
 
 function OrgSetup() {
   const [active, setActive] = useState("departments");
+  const [importing, setImporting] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setImporting(true);
+    setMessage(null);
+
+    try {
+      const text = await file.text();
+      const rows = text
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .map((row) => row.split(","));
+
+      if (rows.length < 2) {
+        throw new Error("The selected CSV file is empty.");
+      }
+
+      const [headers, ...dataRows] = rows;
+      const payload = dataRows.map((values) => Object.fromEntries(headers.map((header, index) => [header.trim(), values[index]?.trim() ?? ""])));
+      await apiRequest("/api/assets", {
+        method: "POST",
+        body: JSON.stringify(payload[0] ?? {}),
+      });
+      setMessage({ type: "success", text: `${file.name} was processed successfully.` });
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Unable to import CSV" });
+    } finally {
+      setImporting(false);
+      event.target.value = "";
+    }
+  };
+
+  const handleExportTemplate = () => {
+    downloadCsv("organization-template.csv", [{ department: "Engineering", head: "Aditi Rao", parent: "", status: "Active" }]);
+  };
 
   return (
     <div className="space-y-6">
@@ -30,15 +73,18 @@ function OrgSetup() {
         description="Manage departments, asset categories and employees. Changes here propagate to allocation, booking and audit modules."
         actions={
           <>
-            <button className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-sm font-medium hover:border-primary/40 hover:text-primary">
-              <Upload className="h-4 w-4" /> Import CSV
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-sm font-medium hover:border-primary/40 hover:text-primary">
+              <Upload className="h-4 w-4" /> {importing ? "Importing…" : "Import CSV"}
             </button>
-            <button className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
-              <Plus className="h-4 w-4" /> Add
+            <input ref={fileInputRef} type="file" accept=".csv,text/csv" onChange={handleImport} className="hidden" />
+            <button type="button" onClick={handleExportTemplate} className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-sm font-medium hover:border-primary/40 hover:text-primary">
+              <Plus className="h-4 w-4" /> Template
             </button>
           </>
         }
       />
+
+      {message && <div className={`rounded-md border px-4 py-3 text-sm ${message.type === "success" ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800"}`}>{message.text}</div>}
 
       {/* Tabs */}
       <div className="flex items-center gap-1 border-b border-border">
