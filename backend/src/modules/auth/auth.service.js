@@ -1,9 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Employee = require('../../models/Employee');
+const { prisma } = require('../../config/db');
 
 async function signup({ name, email, password, department }) {
-  const existing = await Employee.findOne({ email });
+  const existing = await prisma.employee.findUnique({ where: { email } });
   if (existing) {
     const err = new Error('An account with this email already exists');
     err.statusCode = 409;
@@ -11,21 +11,21 @@ async function signup({ name, email, password, department }) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-
-  // IMPORTANT: signup always creates role 'Employee'. No role field accepted from client.
-  const employee = await Employee.create({
-    name,
-    email,
-    passwordHash,
-    department: department || null,
-    role: 'Employee',
+  const employee = await prisma.employee.create({
+    data: {
+      name,
+      email,
+      passwordHash,
+      departmentId: department || null,
+      role: 'Employee',
+    },
   });
 
   return employee;
 }
 
 async function login({ email, password }) {
-  const employee = await Employee.findOne({ email });
+  const employee = await prisma.employee.findUnique({ where: { email } });
   if (!employee) {
     const err = new Error('Invalid email or password');
     err.statusCode = 401;
@@ -45,7 +45,7 @@ async function login({ email, password }) {
   }
 
   const token = jwt.sign(
-    { id: employee._id, role: employee.role, email: employee.email },
+    { id: employee.id, role: employee.role, email: employee.email },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
   );
