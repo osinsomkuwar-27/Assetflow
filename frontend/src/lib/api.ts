@@ -1,5 +1,8 @@
 type JsonRecord = Record<string, unknown>;
 
+const AUTH_TOKEN_KEY = "assetflow.auth.token";
+const AUTH_SESSION_KEY = "assetflow.auth.session";
+
 function getApiBaseUrl() {
   if (typeof window === "undefined") {
     return import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
@@ -20,9 +23,18 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   const baseUrl = getApiBaseUrl();
   const url = `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
+  const customHeaders: Record<string, string> = {};
+  if (typeof window !== "undefined") {
+    const token = window.localStorage.getItem(AUTH_TOKEN_KEY);
+    if (token) {
+      customHeaders["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
   const response = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
+      ...customHeaders,
       ...(options.headers ?? {}),
     },
     ...options,
@@ -36,11 +48,41 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   }
 
   if (!response.ok) {
+    if ((response.status === 401 || response.status === 403) && typeof window !== "undefined") {
+      window.localStorage.removeItem(AUTH_TOKEN_KEY);
+      window.localStorage.removeItem(AUTH_SESSION_KEY);
+      if (window.location.pathname !== "/") {
+        window.location.href = "/";
+      }
+    }
     throw new Error((data?.message as string | undefined) || "Request failed");
   }
 
-  return (data?.payload ?? data ?? ({} as T)) as T;
+  const payload =
+    data && typeof data === "object"
+      ? (data.success === true && "data" in data ? data.data : "payload" in data ? data.payload : data)
+      : data;
+
+  return (payload ?? ({} as T)) as T;
 }
+
+export const api = {
+  get: <T>(url: string) => apiRequest<T>(url),
+  post: <T>(url: string, body?: any) =>
+    apiRequest<T>(url, {
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+  put: <T>(url: string, body?: any) =>
+    apiRequest<T>(url, {
+      method: "PUT",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+  delete: <T>(url: string) =>
+    apiRequest<T>(url, {
+      method: "DELETE",
+    }),
+};
 
 export function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
   if (!rows.length) {
@@ -80,3 +122,5 @@ function escapeCsv(value: unknown) {
   }
   return text;
 }
+
+export { AUTH_TOKEN_KEY, AUTH_SESSION_KEY };
